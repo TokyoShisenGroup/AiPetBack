@@ -10,7 +10,6 @@ type User struct {
 	gorm.Model
 	UserName  string `gorm:"not null;unique"`
 	Avatar    string ``
-	ID        int    `gorm:"primaryKey"`
 	PassWord  string `gorm:"not null"`
 	IsAdmin   bool   `gorm:"not null;default:false"`
 	IsDeleted bool   `gorm:"not null;default:false"`
