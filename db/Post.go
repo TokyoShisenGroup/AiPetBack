@@ -2,6 +2,7 @@ package db
 
 import (
 	"errors"
+	"time"
 
 	"gorm.io/gorm"
 )
@@ -16,6 +17,24 @@ type Post struct {
 	IsDeleted   bool   `gorm:"default:false"`
 	IsTop       bool   `gorm:"default:false"`
 	IsInvisible bool   `gorm:"default:False"`
+}
+
+type PostGet struct {
+	ID          uint
+	CreatedTime time.Time
+	UpdatedTime time.Time
+	Title       string
+	AuthorName  string
+	Avatar      string
+	Content     string
+	Floor       uint
+	IsLocked    bool
+}
+
+type PostRequest struct {
+	Title    string
+	AuthorId uint
+	Content  string
 }
 
 type PostCRUD struct{}
