@@ -17,7 +17,7 @@ var (
 func GetDatabaseInstance() (*gorm.DB, error) {
 	dbOnce.Do(func() {
 		// 使用 SQLite 打开数据库连接
-		dbInstance, dbErr = gorm.Open(sqlite.Open("test.db"), &gorm.Config{})
+		dbInstance, dbErr = gorm.Open(sqlite.Open("databasd.db"), &gorm.Config{})
 	})
 	return dbInstance, dbErr
 }
