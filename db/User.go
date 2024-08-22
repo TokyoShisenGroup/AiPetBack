@@ -124,7 +124,6 @@ func (crud UserCRUD) GetUserByLocation(latitude, longitude, radius float64) ([]U
 	}
 
 	var res []User
-
 	// 使用 GORM 的 ORM 查询，并结合 Haversine 公式计算距离
 	result := db.Where(`
 		6371 * acos(

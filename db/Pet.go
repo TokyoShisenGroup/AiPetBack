@@ -15,8 +15,8 @@ type Pet struct {
 	Age       uint      `gorm:"not null"`
 	Birthday  time.Time `gorm:"not null"`
 	Weight    float32   `gorm:"not null"`
-	OwnerName string    `gorm:"index;not null"`
-	User      User      `gorm:"foreignKey:OwnerName;references:UserName"`
+	OwnerName string    `gorm:"index;not null;foreignKey:OwnerName;references:User(UserName)"`
+	IsDeleted bool      `gorm:"not null;default:false"`
 }
 
 type GetPet struct {
@@ -132,4 +132,17 @@ func (crud PetCRUD) GetPetByFuzzyName(name string) ([]Pet, error) {
 		return nil, result.Error
 	}
 	return res, result.Error
+}
+
+func (crud PetCRUD) DeletePetbyName(name string) error {
+	result, err := crud.GetPetByName(name)
+	if err != nil {
+		return err
+	}
+	result.IsDeleted = true
+	err = crud.UpdateByObject(result)
+	if err != nil {
+		return err
+	}
+	return nil
 }
