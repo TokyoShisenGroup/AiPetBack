@@ -1,6 +1,6 @@
 package router
 
-import (
+/*import (
 	"encoding/json"
 	"net/http"
 
@@ -94,3 +94,4 @@ func deleteMessage(w http.ResponseWriter, r *http.Request) {
 	deleteMessageFromDatabase(id)
 	w.WriteHeader(http.StatusNoContent)
 }
+*/
