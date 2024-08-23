@@ -2,9 +2,9 @@ package router
 
 import (
 	"AiPetBack/db"
-	"net/http"
-
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
+	"net/http"
 )
 
 func initPetRoutes(r *gin.Engine) {
@@ -14,12 +14,26 @@ func initPetRoutes(r *gin.Engine) {
 	pets := r.Group("/pets")
 	{
 		pets.POST("/", func(c *gin.Context) {
-			var pet db.Pet
+			var pet db.RequestPet
 			if err := c.ShouldBindJSON(&pet); err != nil {
 				c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 				return
 			}
-			if err := petCRUD.CreateByObject(&pet); err != nil {
+
+			// 创建宠物
+			var CreatePet = db.Pet{
+				Model:     gorm.Model{},
+				PetName:   pet.PetName,
+				Kind:      pet.Kind,
+				Type:      pet.Type,
+				Age:       pet.Age,
+				Birthday:  pet.Birthday,
+				Weight:    pet.Weight,
+				OwnerName: pet.OwnerName,
+				IsDeleted: false,
+			}
+
+			if err := petCRUD.CreateByObject(&CreatePet); err != nil {
 				c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 				return
 			}
