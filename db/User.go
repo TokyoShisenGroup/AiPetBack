@@ -17,6 +17,21 @@ type User struct {
 	LocationY float32
 }
 
+type UserGet struct {
+	UserName  string
+	Avatar    string
+	LocationX float32
+	LocationY float32
+}
+
+type UserRequest struct {
+	UserName  string
+	Avatar    string
+	IsAdmin   bool
+	LocationX float32
+	LocationY float32
+}
+
 type UserLogin struct {
 	UserName string `json:"UserName" binding:"required"`
 	Password string `json:"Password" binding:"required"`
