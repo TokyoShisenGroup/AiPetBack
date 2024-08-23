@@ -48,7 +48,7 @@ func (crud UserCRUD) GetUserByName(name string) (*User, error) {
 
 	var res User
 	// 使用 .Where 方法指定列名和查询条件;确保只返回未被标记为删除的用户
- 	result := db.Where("user_name = ? AND is_deleted = ?", name, false).First(&res)
+	result := db.Where("user_name = ? AND is_deleted = ?", name, false).First(&res)
 	// result := db.Where("name LIKE ?", "%"+name+"%").First(&res)
 	return &res, result.Error
 }
