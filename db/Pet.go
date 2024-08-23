@@ -64,7 +64,7 @@ func (crud PetCRUD) GetPetByName(name string) (*Pet, error) {
 	}
 	var res Pet
 	// 使用 .Where 方法指定列名和查询条件
-	result := db.Where("user_name = ?", name).First(&res)
+	result := db.Where("owner_name = ?", name).First(&res)
 	return &res, result.Error
 }
 
@@ -105,7 +105,7 @@ func (crud PetCRUD) GetPetByOwner(name string) ([]Pet, error) {
 		return nil, err
 	}
 	var res []Pet
-	result := db.Where("Ownername = ?", name).Find(&res)
+	result := db.Where("owner_name = ?", name).Find(&res)
 	if result.Error != nil {
 		return nil, result.Error
 	}
