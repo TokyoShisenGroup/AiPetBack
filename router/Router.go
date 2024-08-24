@@ -12,10 +12,12 @@ import (
 func InitRoutes(r *gin.Engine) {
 	// Initialize all routes
 	initPetRoutes(r)            // Initialize routes for pets
-	initUserRoutes(r)           // Initialize routes for users
-	initConversationRoutes(r)   // Initialize routes for conversations
-	initPostRoutes(r)           // Initialize routes for posts
-	initReplyRoutes(r)          // Initialize routes for replies
+
+	//These routers are written by gin and can't work normally
+	//initUserRoutes(r)           // Initialize routes for users
+	//initConversationRoutes(r)   // Initialize routes for conversations
+	//initPostRoutes(r)           // Initialize routes for posts
+	//initReplyRoutes(r)          // Initialize routes for replies
 	r.GET("/ws", RunSocket)		// Initialize routes for websocket
 }
 

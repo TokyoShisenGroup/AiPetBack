@@ -13,8 +13,7 @@ import (
 
 var replyCRUD = db.ReplyCRUD{}
 
-func main() {
-    r := mux.NewRouter()
+func RegisterReplyRoutes(r *mux.Router) {
     r.HandleFunc("/replies", createReply).Methods("POST")
     r.HandleFunc("/replies/{id}", getReply).Methods("GET")
     r.HandleFunc("/replies", getAllReplies).Methods("GET")
