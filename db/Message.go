@@ -2,42 +2,70 @@ package db
 
 import (
 	"errors"
-	"time"
+	"AiPetBack/chat/protocol"
 
 	"gorm.io/gorm"
 )
 
 type Message struct {
 	gorm.Model
-	ConvId      uint      `gorm:"index;not null;foreignKey:ConvId;references:Conversations(ID)"`
-	SenderName  string    `gorm:"index;not null;foreignKey:SenderName;references:User(UserName)"`
-	Content     string    `gorm:"not null"`
-	CratedAt    time.Time `gorm:"not null"`
-	MessageType string    `gorm:"not null"`
-	FileId      uint      `gorm:"index;not null;foreignKey:FileId;references:File(ID)"`
+	ConvId      	uint      `gorm:"index;not null;foreignKey:ConvId;references:Conversations(ID)"`
+	SenderName  	string    `gorm:"index;not null;foreignKey:SenderName;references:User(UserId)"`
+	ReceiverName 	string    `gorm:"index;not null;foreignKey:ReceiverName;references:User(UserId)"`
+	ContentType 	int32     `gorm:"not null"`
+	Content     	string    `gorm:"not null"`
+	MessageType 	int32     `gorm:"not null"`
+	FileUrl      	string      `gorm:"index;not null;foreignKey:FileId;references:File(ID)"`
 }
 
 type MessageGet struct {
-	ID          uint
-	ConvId      uint
-	SenderName  string
-	Content     string
-	CratedAt    time.Time
-	MessageType string
-	FileId      uint
+	gorm.Model
+	ConvId      	uint
+	SenderName  	string    
+	ReceiverName 	string
+	ContentType 	int32
+	Content     	string
+	MessageType 	int32 
+	FileUrl      	string
 }
 
 type MessageRequest struct {
-	ID          uint
-	ConvId      uint
-	SenderName  string
-	Content     string
-	CratedAt    time.Time
-	MessageType string
-	FileId      uint
+	gorm.Model
+	ConvId      	uint
+	SenderName  	string    
+	ReceiverName 	string
+	ContentType 	int32
+	Content     	string
+	MessageType 	int32 
+	FileUrl      	string
 }
 
 type MessageCRUD struct{}
+
+func convertMessage(m *protocol.Message)*Message{
+	msg:=&Message{
+		SenderName: m.From,
+		ReceiverName: m.To,
+		ContentType: m.ContentType,
+		Content: m.Content,
+		MessageType: m.MessageType,
+		FileUrl: m.Url,
+	}
+	return msg
+}
+
+func SaveMessage(m *protocol.Message)error{
+	db,err:=GetDatabaseInstance()
+	if err!=nil{
+		return err
+	}
+	msg:=convertMessage(m)
+	result:=db.Create(msg)
+	if result.Error!=nil{
+		return result.Error
+	}
+	return nil
+}
 
 func (crud MessageCRUD) CreateByObject(m *Message) error {
 	db, err := GetDatabaseInstance()
