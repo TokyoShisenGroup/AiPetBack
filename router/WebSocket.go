@@ -17,7 +17,7 @@ var upGrader = websocket.Upgrader{
 }
 
 func RunSocket(c *gin.Context) {
-	user := c.Query("user")
+	user := "wdcyx"//c.Query("user")
 	if user == "" {
 		return
 	}
@@ -37,8 +37,4 @@ func RunSocket(c *gin.Context) {
 	chat.MyServer.Register <- client
 	go client.Read()
 	go client.Write()
-}
-
-func InitWebsocketRoutes(r *gin.Engine) {
-	r.GET("/ws.io", RunSocket)
 }

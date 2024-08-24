@@ -25,7 +25,11 @@ func (c *Client) Read() {
 
 	for {
 		c.Conn.PongHandler()
-		_, message, err := c.Conn.ReadMessage()
+		messageType, message, err := c.Conn.ReadMessage()
+		if messageType == 1 {
+			MyServer.Broadcast <- message
+			return
+		}
 		if err != nil {
 			//log.Logger.Error("client read message error", log.Any("client read message error", err.Error()))
 			fmt.Println("client read message error", err.Error())
@@ -36,7 +40,6 @@ func (c *Client) Read() {
 
 		msg := &protocol.Message{}
 		proto.Unmarshal(message, msg)
-
 		// pong
 		if msg.Type == constant.HEAT_BEAT {
 			pong := &protocol.Message{
