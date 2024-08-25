@@ -2,9 +2,10 @@ package router
 
 import (
 	"AiPetBack/db"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func initPetRoutes(r *gin.Engine) {

@@ -14,19 +14,18 @@ type Pet struct {
 	Type      string    `gorm:"not null"`
 	Age       uint      `gorm:"not null"`
 	Birthday  time.Time `gorm:"not null"`
-	Weight    float32   `gorm:"not null"`
+	Weight    float64   `gorm:"not null"`
 	OwnerName string    `gorm:"index;not null;foreignKey:OwnerName;references:User(UserName)"`
 	IsDeleted bool      `gorm:"not null;default:false"`
 }
 
 type GetPet struct {
-	PetName   string
-	Kind      string
-	Type      string
-	Age       uint
-	Birthday  time.Time
-	Weight    float32
-	OwnerName string
+	PetName  string
+	Kind     string
+	Type     string
+	Age      uint
+	Birthday time.Time
+	Weight   float64
 }
 
 type RequestPet struct {
@@ -35,7 +34,7 @@ type RequestPet struct {
 	Type      string
 	Age       uint
 	Birthday  time.Time
-	Weight    float32
+	Weight    float64
 	OwnerName string
 }
 
