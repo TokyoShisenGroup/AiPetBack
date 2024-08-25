@@ -2,13 +2,13 @@ package chat
 
 import (
 	"AiPetBack/chat/config"
-	"AiPetBack/chat/kafka"
 	"AiPetBack/chat/constant"
+	"AiPetBack/chat/kafka"
 	"AiPetBack/chat/protocol"
 	"fmt"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/gorilla/websocket"
+	"google.golang.org/protobuf/proto"
 )
 
 type Client struct {
@@ -39,7 +39,9 @@ func (c *Client) Read() {
 		}
 
 		msg := &protocol.Message{}
-		proto.Unmarshal(message, msg)
+		if err := proto.Unmarshal(message, msg); err != nil {
+			fmt.Println("client unmarshal message error", err.Error())
+		}
 		// pong
 		if msg.Type == constant.HEAT_BEAT {
 			pong := &protocol.Message{

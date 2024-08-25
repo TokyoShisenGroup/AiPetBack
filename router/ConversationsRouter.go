@@ -14,8 +14,9 @@ var conversationCRUD = db.ConversationCRUD{}
 
 func RegisterConversationRoutes(r *gin.Engine) {
     r.POST("/conversations", createConversation)
-    r.GET("/conversations/:id", getConversationByID)
-    r.GET("/conversations", getConversationsByUser)
+    r.GET("/conversations/id/:id", getConversationByID)
+    r.GET("/conversations/user/:user", getConversationsBySingleUser)
+    r.GET("/conversations/:user1/:user2", getConversationsByUsers)
     r.PUT("/conversations/:id", updateConversation)
 }
 
@@ -54,17 +55,23 @@ func getConversationByID(c *gin.Context) {
     c.JSON(http.StatusOK, conversation)
 }
 
-func getConversationsByUser(c *gin.Context) {
-    user1 := c.Query("user1")
-    user2 := c.Query("user2")
+func getConversationsBySingleUser(c *gin.Context) {
+    user := c.Param("user")
     
-    conversations, err := conversationCRUD.GetConversationByUser1Name(user1)
+    conversations, err := conversationCRUD.GetConversationByUserName(user)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
-    conversations2, err := conversationCRUD.GetConversationByUser1Name(user2)
-    conversations = append(conversations, conversations2...)
+
+    c.JSON(http.StatusOK, conversations)
+}
+
+func getConversationsByUsers(c *gin.Context) {
+    user1 := c.Param("user1")
+    user2 := c.Param("user2")
+    
+    conversations, err := conversationCRUD.GetConversationByUsers(user1, user2)
     if err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return

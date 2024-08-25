@@ -15,7 +15,7 @@ type Message struct {
 	ContentType 	int32     `gorm:"not null"`
 	Content     	string    `gorm:"not null"`
 	MessageType 	int32     `gorm:"not null"`
-	FileUrl      	string      `gorm:"index;not null;foreignKey:FileId;references:File(ID)"`
+	FileUrl      	string    `gorm:"index;not null;foreignKey:FileId;references:File(ID)"`
 }
 
 type MessageGet struct {
@@ -42,7 +42,7 @@ type MessageRequest struct {
 
 type MessageCRUD struct{}
 
-func convertMessage(m *protocol.Message)*Message{
+func decodeMessage(m *protocol.Message)*Message{
 	msg:=&Message{
 		SenderName: m.From,
 		ReceiverName: m.To,
@@ -54,12 +54,27 @@ func convertMessage(m *protocol.Message)*Message{
 	return msg
 }
 
+func encodeMessage(m *Message)*protocol.Message{
+	msg:=&protocol.Message{
+		From: m.SenderName,
+		To: m.ReceiverName,
+		ContentType: m.ContentType,
+		Content: m.Content,
+		MessageType: m.MessageType,
+		Url: m.FileUrl,
+	}
+	return msg
+}
+
 func SaveMessage(m *protocol.Message)error{
 	db,err:=GetDatabaseInstance()
 	if err!=nil{
 		return err
 	}
-	msg:=convertMessage(m)
+	msg:=decodeMessage(m)
+
+	
+
 	result:=db.Create(msg)
 	if result.Error!=nil{
 		return result.Error
@@ -82,14 +97,17 @@ func (crud MessageCRUD) CreateByObject(m *Message) error {
 	return result.Error
 }
 
-func (crud MessageCRUD) GetMessageByConvId(id uint) (*Message, error) {
+func (crud MessageCRUD) GetMessagesByConvId(id uint) (*protocol.Message, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
 	var res Message
 	result := db.Where("ConvId = ?", id).First(&res)
-	return &res, result.Error
+
+	msg:=encodeMessage(&res)
+
+	return msg, result.Error
 }
 
 func (crud MessageCRUD) UpdateByObject(m *Message) error {
@@ -115,12 +133,12 @@ func (crud MessageCRUD) GetMessageBySenderName(name string) ([]Message, error) {
 }
 
 func (crud MessageCRUD) DeleteMessageByID(id uint) error {
-	result, err := crud.GetMessageByConvId(id)
+	result, err := crud.GetMessagesByConvId(id)
 	if err != nil {
 		return err
 	}
 	result.Content = "This message has been deleted"
-	return crud.UpdateByObject(result)
+	return crud.UpdateByObject(decodeMessage(result))
 }
 
 func (crud MessageCRUD) GetAllMessageOrdered() ([]Message, error) {
