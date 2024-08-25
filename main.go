@@ -17,11 +17,10 @@ func main() {
 	// 初始化路由
 	router.InitRoutes(ginRouter)
 
-
 	go chat.MyServer.Start()
 
 	// 启动服务器
-	ginRouter.Run(":8081")
+	ginRouter.Run(":8080")
 }
 
 func initDatabase() {

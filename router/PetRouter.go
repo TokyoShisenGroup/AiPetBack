@@ -2,9 +2,10 @@ package router
 
 import (
 	"AiPetBack/db"
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
-	"net/http"
 )
 
 func initPetRoutes(r *gin.Engine) {
@@ -77,6 +78,17 @@ func initPetRoutes(r *gin.Engine) {
 				return
 			}
 			c.JSON(http.StatusOK, gin.H{"message": "Pet deleted"})
+		})
+
+		//get all pets of an owner
+		pets.GET("/owner/:ownerName", func(c *gin.Context) {
+			ownerName := c.Param("ownerName")
+			pets, err := petCRUD.GetPetByOwner(ownerName)
+			if err != nil {
+				c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+				return
+			}
+			c.JSON(http.StatusOK, pets)
 		})
 	}
 }
