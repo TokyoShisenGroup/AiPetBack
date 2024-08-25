@@ -11,14 +11,14 @@ import (
 // InitRoutes 初始化所有路由
 func InitRoutes(r *gin.Engine) {
 	// Initialize all routes
-	initPetRoutes(r)            // Initialize routes for pets
+	initPetRoutes(r) // Initialize routes for pets
 
 	//These routers are written by gin and can't work normally
 	//initUserRoutes(r)           // Initialize routes for users
 	//initConversationRoutes(r)   // Initialize routes for conversations
 	//initPostRoutes(r)           // Initialize routes for posts
 	//initReplyRoutes(r)          // Initialize routes for replies
-	r.GET("/ws", RunSocket)		// Initialize routes for websocket
+	r.GET("/ws", RunSocket) // Initialize routes for websocket
 }
 
 // initUserRoutes initializes the user routes.

@@ -13,24 +13,22 @@ func main() {
 	ginRouter := gin.Default()
 
 	httpRouter := mux.NewRouter()
-	
 
 	// 初始化数据库
 	initDatabase()
 
 	// 初始化路由
 	router.InitRoutes(ginRouter)
-	router.RegisterConversationRoutes(httpRouter)
-	router.RegisterPostRoutes(httpRouter)
-	router.RegisterUserRoutes(httpRouter)
-	router.RegisterReplyRoutes(httpRouter)
-
+	//router.RegisterConversationRoutes(httpRouter)
+	//router.RegisterPostRoutes(httpRouter)
+	//router.RegisterUserRoutes(httpRouter)
+	//router.RegisterReplyRoutes(httpRouter)
 	ginRouter.Any("/", gin.WrapH(httpRouter))
 
 	go chat.MyServer.Start()
 
 	// 启动服务器
-	ginRouter.Run(":8080")
+	ginRouter.Run(":8081")
 }
 
 func initDatabase() {
