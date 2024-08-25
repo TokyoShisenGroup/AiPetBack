@@ -10,16 +10,18 @@ import (
 
 func main() {
 	ginRouter := gin.Default()
+
 	// 初始化数据库
 	initDatabase()
 
 	// 初始化路由
 	router.InitRoutes(ginRouter)
 
+
 	go chat.MyServer.Start()
 
 	// 启动服务器
-	ginRouter.Run(":8080")
+	ginRouter.Run(":8081")
 }
 
 func initDatabase() {
