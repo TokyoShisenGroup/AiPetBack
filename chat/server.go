@@ -66,6 +66,7 @@ func (s *Server) Start() {
 			proto.Unmarshal(message, msg)
 
 			// 保存消息只会在存在socket的一个端上进行保存，防止分布式部署后，消息重复问题
+			fmt.Println(msg)
 			_, exits := s.Clients[msg.From]
 			if exits {
 				saveMessage(msg)
