@@ -13,6 +13,7 @@ func InitRoutes(r *gin.Engine) {
 	RegisterConversationRoutes(r)   // Initialize routes for conversations
 	RegisterPostRoutes(r)           // Initialize routes for posts
 	RegisterReplyRoutes(r)          // Initialize routes for replies
+	RegisterMessagesRoutes(r) 	 // Initialize routes for messages
 	r.GET("/ws", RunSocket)		// Initialize routes for websocket
 }
 

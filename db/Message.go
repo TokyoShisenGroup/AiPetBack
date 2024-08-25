@@ -73,7 +73,21 @@ func SaveMessage(m *protocol.Message)error{
 	}
 	msg:=decodeMessage(m)
 
-	
+	var convCRUD ConversationCRUD
+	var id uint
+
+	c, err:=convCRUD.GetConversationByUsers(msg.SenderName,msg.ReceiverName)
+	if err!=nil{
+		newConv:=&Conversation{
+			User1Name: msg.SenderName,
+			User2Name: msg.ReceiverName,
+		}
+		convCRUD.CreateByObject(newConv)
+		id=newConv.ID
+	}else{
+		id=c.ID
+	}
+	msg.ConvId=id
 
 	result:=db.Create(msg)
 	if result.Error!=nil{
@@ -97,15 +111,18 @@ func (crud MessageCRUD) CreateByObject(m *Message) error {
 	return result.Error
 }
 
-func (crud MessageCRUD) GetMessagesByConvId(id uint) (*protocol.Message, error) {
+func (crud MessageCRUD) GetMessagesByConvId(id uint) ([]protocol.Message, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
-	var res Message
-	result := db.Where("ConvId = ?", id).First(&res)
+	var res []Message
+	var msg []protocol.Message
+	result := db.Where("conv_id = ?", id).Order("created_at desc").Find(&res)
 
-	msg:=encodeMessage(&res)
+	for _, m:=range res{
+		msg=append(msg,*encodeMessage(&m))
+	}
 
 	return msg, result.Error
 }
@@ -132,15 +149,6 @@ func (crud MessageCRUD) GetMessageBySenderName(name string) ([]Message, error) {
 	return res, result.Error
 }
 
-func (crud MessageCRUD) DeleteMessageByID(id uint) error {
-	result, err := crud.GetMessagesByConvId(id)
-	if err != nil {
-		return err
-	}
-	result.Content = "This message has been deleted"
-	return crud.UpdateByObject(decodeMessage(result))
-}
-
 func (crud MessageCRUD) GetAllMessageOrdered() ([]Message, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
@@ -152,6 +160,7 @@ func (crud MessageCRUD) GetAllMessageOrdered() ([]Message, error) {
 	return res, result.Error
 }
 
+/*
 func (crud MessageCRUD) GetMessageByFuzzyContent(content string) ([]Message, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
@@ -177,3 +186,4 @@ func (crud MessageCRUD) GetMessageByFuzzySenderName(name string) ([]Message, err
 	}
 	return res, result.Error
 }
+*/

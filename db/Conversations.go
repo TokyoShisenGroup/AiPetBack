@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Conversations struct {
+type Conversation struct {
 	gorm.Model
 	User1Name string `gorm:"index;not null;foreignKey:User1Name;references:User(UserName)"`
 	User2Name string `gorm:"index;not null;foreignKey:User2Name;references:User(UserName)"`
@@ -26,7 +26,7 @@ type ConversationRequest struct {
 
 type ConversationCRUD struct{}
 
-func (crud ConversationCRUD) CreateByObject(c *Conversations) error {
+func (crud ConversationCRUD) CreateByObject(c *Conversation) error {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return err
@@ -41,17 +41,17 @@ func (crud ConversationCRUD) CreateByObject(c *Conversations) error {
 	return result.Error
 }
 
-func (crud ConversationCRUD) GetConversationByID(id uint) (*Conversations, error) {
+func (crud ConversationCRUD) GetConversationByID(id uint) (*Conversation, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
-	var res Conversations
+	var res Conversation
 	result := db.Where("ID = ?", id).First(&res)
 	return &res, result.Error
 }
 
-func (crud ConversationCRUD) UpdateByObject(c *Conversations) error {
+func (crud ConversationCRUD) UpdateByObject(c *Conversation) error {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return err
@@ -60,12 +60,12 @@ func (crud ConversationCRUD) UpdateByObject(c *Conversations) error {
 	return result.Error
 }
 
-func (crud ConversationCRUD) GetConversationByUserName(name string) ([]Conversations, error) {
+func (crud ConversationCRUD) GetConversationByUserName(name string) ([]Conversation, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
-	var res, res2 []Conversations
+	var res, res2 []Conversation
 	result := db.Where("user1_name = ? OR user2_name = ?", name, name).Find(&res)
 	if result.Error != nil {
 		return nil, result.Error
@@ -75,15 +75,15 @@ func (crud ConversationCRUD) GetConversationByUserName(name string) ([]Conversat
 	return res, result.Error
 }
 
-func (crud ConversationCRUD) GetConversationByUsers(user1, user2 string) ([]Conversations, error) {
+func (crud ConversationCRUD) GetConversationByUsers(user1, user2 string) (*Conversation, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
-	var res []Conversations
+	var res Conversation
 	result := db.Where("(user1_name = ? AND user2_name = ?) OR (user1_name = ? AND user2_name = ?)", user1, user2, user2, user1).Find(&res)
 	if result.Error != nil {
 		return nil, result.Error
 	}
-	return res, result.Error
+	return &res, result.Error
 }
