@@ -1,15 +1,21 @@
 package router
 
 import (
-    "net/http"
-    "strconv"
+	"net/http"
+	"strconv"
 
-    "github.com/gin-gonic/gin"
-    "gorm.io/gorm"
-    "AiPetBack/db"
+	"AiPetBack/db"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var postCRUD = db.PostCRUD{}
+
+type PostAndRepliesResponse struct {
+	Post    db.Post
+	Replies []db.Reply
+}
 
 func RegisterPostRoutes(r *gin.Engine) {
     r.POST("/posts", createPost)
@@ -51,7 +57,19 @@ func getPost(c *gin.Context) {
         return
     }
 
-    c.JSON(http.StatusOK, post)
+	replies, err := db.ReplyCRUD{}.FindAllByPostId(uint(id))
+	if err != nil {
+        if err == gorm.ErrRecordNotFound{
+            c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+        }
+        return
+    }
+	res:=PostAndRepliesResponse{
+		Post: *post,
+		Replies: replies,
+	}
+
+    c.JSON(http.StatusOK, res)
 }
 
 func getAllPosts(c *gin.Context) {

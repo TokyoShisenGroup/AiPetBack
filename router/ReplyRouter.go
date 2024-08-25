@@ -13,9 +13,9 @@ import (
 var replyCRUD = db.ReplyCRUD{}
 
 func RegisterReplyRoutes(r *gin.Engine) {
-    r.POST("/post/reply", createReply)
-    r.GET("/post/reply/:id", getReply)
-    r.GET("/post/replies", getAllReplies)
+    r.POST("/post/:postid/reply", createReply)
+    r.GET("/post/:postid/getreplies", getRepliesOfPostById)
+    //r.GET("/post/replies", getAllReplies)
     r.PUT("/post/reply/:id", updateReply)
     r.DELETE("/post/reply/:id", deleteReply)
 }
@@ -26,7 +26,13 @@ func createReply(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
+    id, err := strconv.Atoi(c.Param("postid"))
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Get Post ID failed"})
+        return
+    }
 
+    reply.PostId = uint(id)
     if err := replyCRUD.CreateByObject(&reply); err != nil {
         c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
@@ -35,14 +41,14 @@ func createReply(c *gin.Context) {
     c.JSON(http.StatusCreated, reply)
 }
 
-func getReply(c *gin.Context) {
-    id, err := strconv.Atoi(c.Param("id"))
+func getRepliesOfPostById(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("postid"))
     if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid reply ID"})
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Get Post ID failed"})
         return
     }
 
-    reply, err := replyCRUD.FindById(uint(id))
+    replies, err := replyCRUD.FindAllByPostId(uint(id))
     if err != nil {
         if err == gorm.ErrRecordNotFound {
             c.JSON(http.StatusNotFound, gin.H{"error": "Reply not found"})
@@ -52,7 +58,7 @@ func getReply(c *gin.Context) {
         return
     }
 
-    c.JSON(http.StatusOK, reply)
+    c.JSON(http.StatusOK, replies)
 }
 
 func getAllReplies(c *gin.Context) {
