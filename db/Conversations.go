@@ -60,26 +60,28 @@ func (crud ConversationCRUD) UpdateByObject(c *Conversations) error {
 	return result.Error
 }
 
-func (crud ConversationCRUD) GetConversationByUser1Name(name string) ([]Conversations, error) {
+func (crud ConversationCRUD) GetConversationByUserName(name string) ([]Conversations, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
-	var res []Conversations
-	result := db.Where("User1Name = ?", name).Find(&res)
+	var res, res2 []Conversations
+	result := db.Where("user1_name = ? OR user2_name = ?", name, name).Find(&res)
 	if result.Error != nil {
 		return nil, result.Error
 	}
+
+	res = append(res, res2...)
 	return res, result.Error
 }
 
-func (crud ConversationCRUD) GetConversationByUser2Name(name string) ([]Conversations, error) {
+func (crud ConversationCRUD) GetConversationByUsers(user1, user2 string) ([]Conversations, error) {
 	db, err := GetDatabaseInstance()
 	if err != nil {
 		return nil, err
 	}
 	var res []Conversations
-	result := db.Where("User2Name = ?", name).Find(&res)
+	result := db.Where("(user1_name = ? AND user2_name = ?) OR (user1_name = ? AND user2_name = ?)", user1, user2, user2, user1).Find(&res)
 	if result.Error != nil {
 		return nil, result.Error
 	}

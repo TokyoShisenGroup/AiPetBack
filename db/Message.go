@@ -15,7 +15,7 @@ type Message struct {
 	ContentType 	int32     `gorm:"not null"`
 	Content     	string    `gorm:"not null"`
 	MessageType 	int32     `gorm:"not null"`
-	FileUrl      	string     `gorm:"index;not null;foreignKey:FileId;references:File(ID)"`
+	FileUrl      	string    `gorm:"index;not null;foreignKey:FileId;references:File(ID)"`
 }
 
 type MessageGet struct {
@@ -72,6 +72,9 @@ func SaveMessage(m *protocol.Message)error{
 		return err
 	}
 	msg:=decodeMessage(m)
+
+	
+
 	result:=db.Create(msg)
 	if result.Error!=nil{
 		return result.Error
