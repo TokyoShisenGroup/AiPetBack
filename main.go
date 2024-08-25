@@ -17,7 +17,6 @@ func main() {
 	// 初始化路由
 	router.InitRoutes(ginRouter)
 
-
 	go chat.MyServer.Start()
 
 	// 启动服务器
@@ -31,5 +30,5 @@ func initDatabase() {
 	}
 
 	// 自动迁移数据库结构
-	dbInstance.AutoMigrate(&db.User{}, &db.Conversations{}, &db.Pet{}, &db.Post{}, &db.Reply{})
+	dbInstance.AutoMigrate(&db.User{}, &db.Conversation{}, &db.Pet{}, &db.Post{}, &db.Reply{}, &db.Message{})
 }

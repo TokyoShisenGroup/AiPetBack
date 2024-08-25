@@ -57,11 +57,11 @@ type InterfaceOfMessageCRUD interface {
 }
 
 type InterfaceOfConversationCRUD interface {
-	CreateByObject(*Conversations) error
-	GetConversationById(uint) (*Conversations, error)
-	UpdateByObject(*Conversations) error
-	GetConversationByUser1Name(string) ([]Conversations, error)
-	GetConversationByUser2Name(string) ([]Conversations, error)
+	CreateByObject(*Conversation) error
+	GetConversationById(uint) (*Conversation, error)
+	UpdateByObject(*Conversation) error
+	GetConversationByUser1Name(string) ([]Conversation, error)
+	GetConversationByUser2Name(string) ([]Conversation, error)
 }
 
 type InterfaceOfFileCRUD interface {
