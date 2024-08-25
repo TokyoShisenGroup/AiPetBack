@@ -2,8 +2,8 @@ package router
 
 import (
 	"AiPetBack/chat"
-	"net/http"
 	"fmt"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -17,7 +17,7 @@ var upGrader = websocket.Upgrader{
 }
 
 func RunSocket(c *gin.Context) {
-	user := "wdcyx"//c.Query("user")
+	user := "wdcyx" //c.Query("user")
 	if user == "" {
 		return
 	}

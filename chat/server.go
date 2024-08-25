@@ -1,17 +1,17 @@
 package chat
 
 import (
-	"AiPetBack/chat/protocol"
-	"AiPetBack/db"
-	"AiPetBack/chat/constant"
-	"AiPetBack/chat/utils"
 	"AiPetBack/chat/config"
+	"AiPetBack/chat/constant"
+	"AiPetBack/chat/protocol"
+	"AiPetBack/chat/utils"
+	"AiPetBack/db"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sync"
 
-	"github.com/gogo/protobuf/proto"
 	"github.com/google/uuid"
+	"google.golang.org/protobuf/proto"
 )
 
 var MyServer = NewServer()
@@ -44,7 +44,7 @@ func (s *Server) Start() {
 	for {
 		select {
 		case conn := <-s.Register:
-			fmt.Println("new user logged in"+conn.Name)
+			fmt.Println("new user logged in" + conn.Name)
 			s.Clients[conn.Name] = conn
 			msg := &protocol.Message{
 				From:    "System",
@@ -55,7 +55,7 @@ func (s *Server) Start() {
 			conn.Send <- protoMsg
 
 		case conn := <-s.Ungister:
-			fmt.Println("new user logged out"+conn.Name)
+			fmt.Println("new user logged out" + conn.Name)
 			if _, ok := s.Clients[conn.Name]; ok {
 				close(conn.Send)
 				delete(s.Clients, conn.Name)
@@ -92,7 +92,7 @@ func saveMessage(message *protocol.Message) {
 
 		contentType := utils.GetContentTypeBySuffix(fileSuffix)
 		url := uuid.New().String() + "." + fileSuffix
-		err := ioutil.WriteFile(config.GetConfig().StaticPath.FilePath+url, message.File, 0666)
+		err := os.WriteFile(config.GetConfig().StaticPath.FilePath+url, message.File, 0666)
 		if err != nil {
 			//log.Logger.Error("write file error", log.String("write file error", err.Error()))
 			return
@@ -101,6 +101,6 @@ func saveMessage(message *protocol.Message) {
 		message.File = nil
 		message.ContentType = contentType
 	}
-	
+
 	db.SaveMessage(message)
 }
