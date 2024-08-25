@@ -1,107 +1,120 @@
 package router
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
-	"github.com/gorilla/mux"
-	"gorm.io/gorm"
 	"AiPetBack/db"
+
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 )
 
 var postCRUD = db.PostCRUD{}
 
-func RegisterPostRoutes(r *mux.Router) {
-	r.HandleFunc("/posts", createPost).Methods("POST")
-	r.HandleFunc("/posts/{id}", getPost).Methods("GET")
-	r.HandleFunc("/posts", getAllPosts).Methods("GET")
-	r.HandleFunc("/posts/{id}", updatePost).Methods("PUT")
-	r.HandleFunc("/posts/{id}", deletePost).Methods("DELETE")
+type PostAndRepliesResponse struct {
+	Post    db.Post
+	Replies []db.Reply
 }
 
-func createPost(w http.ResponseWriter, r *http.Request) {
-	var post db.Post
-	if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	if err := postCRUD.CreateByObject(&post); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(post)
+func RegisterPostRoutes(r *gin.Engine) {
+    r.POST("/posts", createPost)
+    r.GET("/posts/:id", getPost)
+    r.GET("/posts", getAllPosts)
+    r.PUT("/posts/:id", updatePost)
+    r.DELETE("/posts/:id", deletePost)
 }
 
-func getPost(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
-		return
-	}
+func createPost(c *gin.Context) {
+    var post db.Post
+    if err := c.ShouldBindJSON(&post); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
 
-	post, err := postCRUD.FindById(uint(id))
-	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			http.Error(w, "Post not found", http.StatusNotFound)
-		} else {
-			http.Error(w, err.Error(), http.StatusInternalServerError)
-		}
-		return
-	}
+    if err := postCRUD.CreateByObject(&post); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
 
-	json.NewEncoder(w).Encode(post)
+    c.JSON(http.StatusCreated, post)
 }
 
-func getAllPosts(w http.ResponseWriter, r *http.Request) {
-	posts, err := postCRUD.FindAll()
+func getPost(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+        return
+    }
+
+    post, err := postCRUD.FindById(uint(id))
+    if err != nil {
+        if err == gorm.ErrRecordNotFound {
+            c.JSON(http.StatusNotFound, gin.H{"error": "Post not found"})
+        } else {
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        }
+        return
+    }
+
+	replies, err := db.ReplyCRUD{}.FindAllByPostId(uint(id))
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+        if err == gorm.ErrRecordNotFound{
+            c.JSON(http.StatusInternalServerError, gin.H{"Error": err.Error()})
+        }
+        return
+    }
+	res:=PostAndRepliesResponse{
+		Post: *post,
+		Replies: replies,
 	}
 
-	json.NewEncoder(w).Encode(posts)
+    c.JSON(http.StatusOK, res)
 }
 
-func updatePost(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
-		return
-	}
+func getAllPosts(c *gin.Context) {
+    posts, err := postCRUD.FindAll()
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
 
-	var post db.Post
-	if err := json.NewDecoder(r.Body).Decode(&post); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	post.ID = uint(id)
-	if err := postCRUD.UpdateByObject(&post); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-
-	json.NewEncoder(w).Encode(post)
+    c.JSON(http.StatusOK, posts)
 }
 
-func deletePost(w http.ResponseWriter, r *http.Request) {
-	params := mux.Vars(r)
-	id, err := strconv.Atoi(params["id"])
-	if err != nil {
-		http.Error(w, "Invalid post ID", http.StatusBadRequest)
-		return
-	}
+func updatePost(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+        return
+    }
 
-	if err := postCRUD.SafeDeleteById(uint(id)); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    var post db.Post
+    if err := c.ShouldBindJSON(&post); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
 
-	w.WriteHeader(http.StatusNoContent)
+    post.ID = uint(id)
+    if err := postCRUD.UpdateByObject(&post); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.JSON(http.StatusOK, post)
+}
+
+func deletePost(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid post ID"})
+        return
+    }
+
+    if err := postCRUD.SafeDeleteById(uint(id)); err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+
+    c.Status(http.StatusNoContent)
 }

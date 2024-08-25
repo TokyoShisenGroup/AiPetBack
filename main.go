@@ -6,24 +6,17 @@ import (
 	"AiPetBack/router"
 
 	"github.com/gin-gonic/gin"
-	"github.com/gorilla/mux"
 )
 
 func main() {
 	ginRouter := gin.Default()
-
-	httpRouter := mux.NewRouter()
 
 	// 初始化数据库
 	initDatabase()
 
 	// 初始化路由
 	router.InitRoutes(ginRouter)
-	//router.RegisterConversationRoutes(httpRouter)
-	//router.RegisterPostRoutes(httpRouter)
-	//router.RegisterUserRoutes(httpRouter)
-	//router.RegisterReplyRoutes(httpRouter)
-	ginRouter.Any("/", gin.WrapH(httpRouter))
+
 
 	go chat.MyServer.Start()
 

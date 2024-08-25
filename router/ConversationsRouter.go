@@ -1,104 +1,96 @@
 package router
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
-	"AiPetBack/db" 
+	"AiPetBack/db"
 
-	"github.com/gorilla/mux"
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
 var conversationCRUD = db.ConversationCRUD{}
 
-func RegisterConversationRoutes(r *mux.Router) {
-    r.HandleFunc("/conversations", createConversation).Methods("POST")
-    r.HandleFunc("/conversations/{id}", getConversationByID).Methods("GET")
-    r.HandleFunc("/conversations", getConversationsByUser1).Methods("GET").Queries("user1", "{user1}")
-    r.HandleFunc("/conversations", getConversationsByUser2).Methods("GET").Queries("user2", "{user2}")
-    r.HandleFunc("/conversations/{id}", updateConversation).Methods("PUT")
+func RegisterConversationRoutes(r *gin.Engine) {
+    r.POST("/conversations", createConversation)
+    r.GET("/conversations/:id", getConversationByID)
+    r.GET("/conversations", getConversationsByUser)
+    r.PUT("/conversations/:id", updateConversation)
 }
 
-func createConversation(w http.ResponseWriter, r *http.Request) {
+func createConversation(c *gin.Context) {
     var conversation db.Conversations
-    if err := json.NewDecoder(r.Body).Decode(&conversation); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+    if err := c.ShouldBindJSON(&conversation); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     if err := conversationCRUD.CreateByObject(&conversation); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    w.WriteHeader(http.StatusCreated)
-    json.NewEncoder(w).Encode(conversation)
+    c.JSON(http.StatusCreated, conversation)
 }
 
-func getConversationByID(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    id, err := strconv.Atoi(params["id"])
+func getConversationByID(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
     if err != nil {
-        http.Error(w, "Invalid conversation ID", http.StatusBadRequest)
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid conversation ID"})
         return
     }
 
     conversation, err := conversationCRUD.GetConversationByID(uint(id))
     if err != nil {
         if err == gorm.ErrRecordNotFound {
-            http.Error(w, "Conversation not found", http.StatusNotFound)
+            c.JSON(http.StatusNotFound, gin.H{"error": "Conversation not found"})
         } else {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         }
         return
     }
 
-    json.NewEncoder(w).Encode(conversation)
+    c.JSON(http.StatusOK, conversation)
 }
 
-func getConversationsByUser1(w http.ResponseWriter, r *http.Request) {
-    user1 := r.URL.Query().Get("user1")
+func getConversationsByUser(c *gin.Context) {
+    user1 := c.Query("user1")
+    user2 := c.Query("user2")
+    
     conversations, err := conversationCRUD.GetConversationByUser1Name(user1)
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+        return
+    }
+    conversations2, err := conversationCRUD.GetConversationByUser1Name(user2)
+    conversations = append(conversations, conversations2...)
+    if err != nil {
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    json.NewEncoder(w).Encode(conversations)
+    c.JSON(http.StatusOK, conversations)
 }
 
-func getConversationsByUser2(w http.ResponseWriter, r *http.Request) {
-    user2 := r.URL.Query().Get("user2")
-    conversations, err := conversationCRUD.GetConversationByUser2Name(user2)
+func updateConversation(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
-        return
-    }
-
-    json.NewEncoder(w).Encode(conversations)
-}
-
-func updateConversation(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    id, err := strconv.Atoi(params["id"])
-    if err != nil {
-        http.Error(w, "Invalid conversation ID", http.StatusBadRequest)
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid conversation ID"})
         return
     }
 
     var conversation db.Conversations
-    if err := json.NewDecoder(r.Body).Decode(&conversation); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+    if err := c.ShouldBindJSON(&conversation); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     conversation.ID = uint(id)
     if err := conversationCRUD.UpdateByObject(&conversation); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    json.NewEncoder(w).Encode(conversation)
+    c.JSON(http.StatusOK, conversation)
 }

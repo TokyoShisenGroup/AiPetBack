@@ -1,110 +1,109 @@
 package router
 
 import (
-	"encoding/json"
-	"net/http"
-	"strconv"
+    "net/http"
+    "strconv"
 
-	"AiPetBack/db"
+    "AiPetBack/db"
 
-	"github.com/gorilla/mux"
-	"gorm.io/gorm"
+    "github.com/gin-gonic/gin"
+    "gorm.io/gorm"
 )
 
 var replyCRUD = db.ReplyCRUD{}
 
-func RegisterReplyRoutes(r *mux.Router) {
-    r.HandleFunc("/replies", createReply).Methods("POST")
-    r.HandleFunc("/replies/{id}", getReply).Methods("GET")
-    r.HandleFunc("/replies", getAllReplies).Methods("GET")
-    r.HandleFunc("/replies/{id}", updateReply).Methods("PUT")
-    r.HandleFunc("/replies/{id}", deleteReply).Methods("DELETE")
-
-    http.ListenAndServe(":8080", r)
+func RegisterReplyRoutes(r *gin.Engine) {
+    r.POST("/post/:postid/reply", createReply)
+    r.GET("/post/:postid/getreplies", getRepliesOfPostById)
+    //r.GET("/post/replies", getAllReplies)
+    r.PUT("/post/reply/:id", updateReply)
+    r.DELETE("/post/reply/:id", deleteReply)
 }
 
-func createReply(w http.ResponseWriter, r *http.Request) {
+func createReply(c *gin.Context) {
     var reply db.Reply
-    if err := json.NewDecoder(r.Body).Decode(&reply); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+    if err := c.ShouldBindJSON(&reply); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+        return
+    }
+    id, err := strconv.Atoi(c.Param("postid"))
+    if err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Get Post ID failed"})
         return
     }
 
+    reply.PostId = uint(id)
     if err := replyCRUD.CreateByObject(&reply); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    w.WriteHeader(http.StatusCreated)
-    json.NewEncoder(w).Encode(reply)
+    c.JSON(http.StatusCreated, reply)
 }
 
-func getReply(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    id, err := strconv.Atoi(params["id"])
+func getRepliesOfPostById(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("postid"))
     if err != nil {
-        http.Error(w, "Invalid reply ID", http.StatusBadRequest)
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Get Post ID failed"})
         return
     }
 
-    reply, err := replyCRUD.FindById(uint(id))
+    replies, err := replyCRUD.FindAllByPostId(uint(id))
     if err != nil {
         if err == gorm.ErrRecordNotFound {
-            http.Error(w, "Reply not found", http.StatusNotFound)
+            c.JSON(http.StatusNotFound, gin.H{"error": "Reply not found"})
         } else {
-            http.Error(w, err.Error(), http.StatusInternalServerError)
+            c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         }
         return
     }
 
-    json.NewEncoder(w).Encode(reply)
+    c.JSON(http.StatusOK, replies)
 }
 
-func getAllReplies(w http.ResponseWriter, r *http.Request) {
+func getAllReplies(c *gin.Context) {
     replies, err := replyCRUD.FindAll()
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    json.NewEncoder(w).Encode(replies)
+    c.JSON(http.StatusOK, replies)
 }
 
-func updateReply(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    id, err := strconv.Atoi(params["id"])
+func updateReply(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
     if err != nil {
-        http.Error(w, "Invalid reply ID", http.StatusBadRequest)
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid reply ID"})
         return
     }
 
     var reply db.Reply
-    if err := json.NewDecoder(r.Body).Decode(&reply); err != nil {
-        http.Error(w, err.Error(), http.StatusBadRequest)
+    if err := c.ShouldBindJSON(&reply); err != nil {
+        c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
         return
     }
 
     reply.ID = uint(id)
     if err := replyCRUD.UpdateByObject(&reply); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    json.NewEncoder(w).Encode(reply)
+    c.JSON(http.StatusOK, reply)
 }
 
-func deleteReply(w http.ResponseWriter, r *http.Request) {
-    params := mux.Vars(r)
-    id, err := strconv.Atoi(params["id"])
+func deleteReply(c *gin.Context) {
+    id, err := strconv.Atoi(c.Param("id"))
     if err != nil {
-        http.Error(w, "Invalid reply ID", http.StatusBadRequest)
+        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid reply ID"})
         return
     }
 
     if err := replyCRUD.SafeDeleteById(uint(id)); err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
         return
     }
 
-    w.WriteHeader(http.StatusNoContent)
+    c.Status(http.StatusNoContent)
 }
