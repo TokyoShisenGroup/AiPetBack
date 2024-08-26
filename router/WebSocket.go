@@ -17,7 +17,7 @@ var upGrader = websocket.Upgrader{
 }
 
 func RunSocket(c *gin.Context) {
-	user:=c.Query("user")
+	user := c.Query("user")
 	if user == "" {
 		return
 	}

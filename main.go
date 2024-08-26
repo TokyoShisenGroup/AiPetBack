@@ -4,6 +4,8 @@ import (
 	"AiPetBack/chat"
 	"AiPetBack/db"
 	"AiPetBack/router"
+	"AiPetBack/chat/config"
+	"AiPetBack/chat/kafka"
 
 	"github.com/gin-gonic/gin"
 )
@@ -13,6 +15,12 @@ func main() {
 
 	// 初始化数据库
 	initDatabase()
+
+	if config.GetConfig().MsgChannelType.ChannelType == "kafka" {
+		kafka.InitProducer(config.GetConfig().MsgChannelType.KafkaTopic, config.GetConfig().MsgChannelType.KafkaHosts)
+		kafka.InitConsumer(config.GetConfig().MsgChannelType.KafkaHosts)
+		go kafka.ConsumerMsg(chat.ConsumerKafkaMsg)
+	}
 
 	// 初始化路由
 	router.InitRoutes(ginRouter)

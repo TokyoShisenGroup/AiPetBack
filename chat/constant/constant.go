@@ -21,3 +21,10 @@ const (
 	GO_CHANNEL = "gochannel"
 	KAFKA      = "kafka"
 )
+
+const(
+	FILEPATH = "web/static/file/"
+	CHANNNELTYPE = "gochannel"
+	KAFKAHOSTS = "kafka:9092"
+	KAFKATOPIC = "chat-message"
+)

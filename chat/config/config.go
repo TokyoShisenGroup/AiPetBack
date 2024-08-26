@@ -1,5 +1,8 @@
 package config
 
+import (
+	"AiPetBack/chat/constant"
+)
 
 type Config struct {
 	StaticPath     PathConfig
@@ -20,8 +23,17 @@ type MsgChannelType struct {
 	KafkaTopic  string
 }
 
-var c Config
-
 func GetConfig() Config {
+	c:=Config{
+		StaticPath: PathConfig{
+			FilePath: constant.FILEPATH,
+		},
+		MsgChannelType: MsgChannelType{
+			ChannelType: constant.CHANNNELTYPE,
+			KafkaHosts: constant.KAFKAHOSTS,
+			KafkaTopic: constant.KAFKATOPIC,
+		},
+	}
+
 	return c
 }
